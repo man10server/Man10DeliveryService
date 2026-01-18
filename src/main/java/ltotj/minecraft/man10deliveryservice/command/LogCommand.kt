@@ -7,7 +7,6 @@ import ltotj.minecraft.man10deliveryservice.Main.Companion.plugin
 import ltotj.minecraft.man10deliveryservice.Main.Companion.pluginTitle
 import ltotj.minecraft.man10deliveryservice.MySQLManager
 import ltotj.minecraft.man10deliveryservice.Utility.createClickEventText_run
-import ltotj.minecraft.man10deliveryservice.Utility.itemFromBase64
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import org.bukkit.Bukkit
@@ -16,6 +15,7 @@ import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 import java.sql.ResultSet
 import java.util.*
 
@@ -131,7 +131,7 @@ object LogCommand:CommandExecutor,TabCompleter {
                                 sender.sendMessage("§aオーダーID：${order_id}のアイテムを検索中・・・")
                                 sender.sendMessage(if(result.getBoolean("box_status")) "§e開封者:${result.getString("opener_name")}" else "§eボックス未開封")
                                 for (i in 1..8) {
-                                    val item = itemFromBase64(result.getString("slot$i") ?: continue) ?: continue
+                                    val item = ItemStack.deserializeBytes(result.getBytes("slot$i") ?: continue)
                                     sender.sendMessage(text("§e§l[スロット$i]：${item.amount}個").hoverEvent(item.asHoverEvent()))
                                 }
                                 sender.sendMessage("§a検索完了  カーソルを合わせることで表示されます")

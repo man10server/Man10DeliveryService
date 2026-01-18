@@ -10,9 +10,6 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import org.bukkit.util.io.BukkitObjectInputStream
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
-import java.io.ByteArrayInputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,22 +52,6 @@ object Utility {
         else yen.append("0").reverse()
         return yen.toString()
     }
-
-//    fun itemFromBase64(data: String): ItemStack? = try {
-//        val inputStream = ByteArrayInputStream(Base64Coder.decodeLines(data))
-//        val dataInput = BukkitObjectInputStream(inputStream)
-//        val items = arrayOfNulls<ItemStack>(dataInput.readInt())
-//
-//        // Read the serialized inventory
-//        for (i in items.indices) {
-//            items[i] = dataInput.readObject() as ItemStack
-//        }
-//
-//        dataInput.close()
-//        items[0]
-//    } catch (e: Exception) {
-//        null
-//    }
 
     fun setNBTInt(item:ItemStack,namespacedKey: String,value:Int){
         val meta=item.itemMeta
