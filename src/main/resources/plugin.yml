@@ -1,7 +1,7 @@
 name: Man10DeliveryService
 version: @version@
 main: ltotj.minecraft.man10deliveryservice.Main
-api-version: 1.17
+api-version: 1.21
 depend: [Vault]
 commands:
   mdrec:

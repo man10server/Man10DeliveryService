@@ -1,0 +1,7 @@
+build/*
+.gradle/*
+.DS_Store
+.idea/*
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar

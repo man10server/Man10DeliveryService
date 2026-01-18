@@ -28,6 +28,12 @@ object OPCommand:CommandExecutor,TabCompleter {
 
     private val mysql=MySQLManager(plugin, pluginTitle)
 
+
+    private fun sendMessage(sender:CommandSender,messages:Array<out String>){
+        messages.forEach {
+            sender.sendMessage(it)
+        }
+    }
     private fun getAdminItemBox(order_id: Int): ItemStack {
         val result = mysql.query("select sender_name,wrapping,boxName,order_date from delivery_order where order_id=$order_id;")
                 ?: return createGUIItem(Material.STONE, 1, "エラーアイテム")
@@ -50,6 +56,8 @@ object OPCommand:CommandExecutor,TabCompleter {
         return item
     }
 
+    private var isConverting=false
+
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         if(sender !is Player){
             return true
@@ -62,9 +70,72 @@ object OPCommand:CommandExecutor,TabCompleter {
             sender.performCommand("mdop help")
             return true
         }
+
         when(args[0]){
+//            "convertBase64ToBytes"->{
+//                available=false
+//                if(isConverting){
+//                    sender.sendMessage("コンバート中")
+//                    return true
+//                }
+//                isConverting=true
+//                Thread{
+//
+//
+//                    val results=mysql.query("SELECT * from delivery_order;")?:run {
+//                        sender.sendMessage("データを引く段階でエラー")
+//                        Main.plugin.logger.warning("データを引く段階でエラー")
+//                        return@Thread
+//                    }
+//                    mysql.execute("START TRANSACTION;")
+//                    while(results.next()){
+//
+//                        val items= ArrayList<ItemStack>()
+//                        var query="INSERT INTO delivery_order(order_id,sender_name,sender_uuid,receiver_name,receiver_uuid,order_date,receive_date,order_status,wrapping,boxName," +
+//                                "amount,slot1,slot2,slot3,slot4,slot5,slot6,slot7,slot8,box_status,opener_name,opener_uuid,opened_date) values(" +
+//                                "${results.getInt("order_id")}," +
+//                                "${results.getString("sender_name")}," +
+//                                "${results.getString("sender_uuid")}," +
+//                                "${results.getString("receiver_name")}," +
+//                                "${results.getString("receiver_uuid")}," +
+//                                "${results.getString("order_date")}," +
+//                                "${results.getString("receive_date")}," +
+//                                "${results.getString("order_status")}," +
+//                                "${results.getString("wrapping")}," +
+//                                "${results.getString("boxName")}," +
+//                                "${results.getString("amount")},"
+//
+//                        for(i in 1 until 8){
+//                            val itemStr=results.getString("slot$i")?:run{
+//                                query+="null,"
+//                                continue
+//                            }
+//                            val item=itemFromBase64(itemStr)?:run {
+//                                plugin.logger.warning("${results.getInt("order_id")}のslot${i}をitem化できなかったため中止")
+//                                mysql.execute("ROLLBACK;")
+//                                results.close()
+//                                return@Thread
+//                            }
+//                            query+="${item.serializeAsBytes()},"
+//                        }
+//                        query+="${results.getString("box_status")}," +
+//                                "${results.getString("opener_name")}," +
+//                                "${results.getString("opener_uuid")}," +
+//                                "${results.getString("opened_date")});"
+//                        mysql.execute(query)
+//
+//                    }
+//
+//                    mysql.execute("COMMIT;")
+//                    results.close()
+//                    mysql.close()
+//
+//
+//                }
+//            }
+
             "help"->{
-                sender.sendMessage(arrayOf("§6==========§e[$pluginTitle]§6===========","§e/mdop banitem ->手に持ったアイテムを発送禁止リストに追加します §4※Material指定です"
+                sendMessage(sender,arrayOf("§6==========§e[$pluginTitle]§6===========","§e/mdop banitem ->手に持ったアイテムを発送禁止リストに追加します §4※Material指定です"
                         ,"§e/mdop unbanitem ->手に持ったアイテムを発送禁止リストから削除します §4※Material指定です"
                         ,"§e/mdop on ->${pluginTitle}を利用可能にします","§e/mdop off ->${pluginTitle}を利用不可にします"
                         ,"§e/mdop adminbox オーダーID ->指定されたオーダーIDのアドミン専用ボックスを取得します"

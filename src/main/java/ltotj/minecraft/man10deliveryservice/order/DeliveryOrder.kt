@@ -33,9 +33,6 @@ import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import org.bukkit.util.io.BukkitObjectOutputStream
-import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
-import java.io.ByteArrayOutputStream
 import java.lang.Integer.min
 import java.lang.Thread.sleep
 import java.util.*
@@ -44,7 +41,7 @@ object DeliveryOrder: Listener {
 
     private val mysql= MySQLManager(plugin, pluginTitle)
 
-    private fun returnItem(player:Player,contents:Array<out ItemStack>){
+    private fun returnItem(player:Player,contents:Array<ItemStack?>){
         var pocket=countAirPocket(player.inventory)
         for(i in 0 until 8){
             if(contents[i]!=null){
@@ -57,28 +54,8 @@ object DeliveryOrder: Listener {
         }
     }
 
-    @Throws(IllegalStateException::class)
-    private fun itemToBase64(item: ItemStack?): String? {
-        if(item==null||item.type==Material.AIR)return null
-        try {
-            val outputStream = ByteArrayOutputStream()
-            val dataOutput = BukkitObjectOutputStream(outputStream)
-            val items = arrayOfNulls<ItemStack>(1)
-            items[0] = item
-            dataOutput.writeInt(items.size)
 
-            for (i in items.indices) {
-                dataOutput.writeObject(items[i])
-            }
 
-            dataOutput.close()
-
-            return Base64Coder.encodeLines(outputStream.toByteArray())
-
-        } catch (e: Exception) {
-            throw IllegalStateException("Unable to save item stacks.", e)
-        }
-    }
 
     fun generateContainerSelectInv(receiver_name:String,boxName:String):Inventory{
         val wrappingList=con.getConfigurationSection("itemBox")!!.getKeys(false)
@@ -131,7 +108,7 @@ object DeliveryOrder: Listener {
             val container=e.clickedInventory?.contents?.clone()?:return
             var count=0
             for(i in 0 until 8){
-                if(container!![i]!=null)count++
+                if(container[i]!=null)count++
             }
             if(count==0){
                 e.whoClicked.sendMessage("空のコンテナを送ることはできません")
@@ -145,8 +122,8 @@ object DeliveryOrder: Listener {
                 return
             }
             for(i in 0..7){
-                if(container[i]!=null&&disableItems.contains(container[i].type.toString())){
-                    e.whoClicked.sendMessage("§4${container[i].type}を送ることはできません")
+                if(container[i]!=null&&disableItems.contains(container[i]?.type.toString())){
+                    e.whoClicked.sendMessage("§4${container[i]?.type}を送ることはできません")
                     return
                 }
             }
@@ -185,7 +162,7 @@ object DeliveryOrder: Listener {
                         query.append(",null")
                     }
                     else {
-                        query.append(",'${itemToBase64(container[i])}'")
+                        query.append(",'${container[i]?.serializeAsBytes()}'")
                     }
                 }
                 query.append(");")
@@ -220,7 +197,7 @@ object DeliveryOrder: Listener {
         val item=e.currentItem?:return
         e.isCancelled=true
         if(item.type==Material.WHITE_STAINED_GLASS_PANE)return
-        e.whoClicked.openInventory(generateContainer(getNBTString(item,"wrapping"),inv.contents[inv.size-1]))
+        e.whoClicked.openInventory(generateContainer(getNBTString(item,"wrapping"), inv.contents!![inv.size-1]!!))
         (e.whoClicked as Player).playSound(e.whoClicked.location,Sound.BLOCK_NOTE_BLOCK_HARP,1F,1F)
     }
 
@@ -266,7 +243,7 @@ object DeliveryOrder: Listener {
     @EventHandler
     fun containerCloseEvent(e: InventoryCloseEvent){
         if(e.view.title()!= Component.text(Main.containerGUIName)||e.inventory.size!=9||e.inventory.getItem(8)?.itemMeta?.displayName()!=Component.text(sendButtonName))return
-        returnItem(e.player as Player,e.inventory.contents)
+        e.inventory.contents?.let { returnItem(e.player as Player, it) }
     }
 
 }

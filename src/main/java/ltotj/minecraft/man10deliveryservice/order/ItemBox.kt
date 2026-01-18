@@ -8,7 +8,6 @@ import ltotj.minecraft.man10deliveryservice.MySQLManager
 import ltotj.minecraft.man10deliveryservice.Utility.countAirPocket
 import ltotj.minecraft.man10deliveryservice.Utility.getDateForMySQL
 import ltotj.minecraft.man10deliveryservice.Utility.getNBTInt
-import ltotj.minecraft.man10deliveryservice.Utility.itemFromBase64
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -17,6 +16,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 import java.util.*
 
 object ItemBox: Listener {
@@ -57,7 +57,7 @@ object ItemBox: Listener {
                 }
                 else{
                     for(i in 1..8){
-                        val boxedItem= itemFromBase64(result.getString("slot$i")?:continue)?:continue
+                        val boxedItem= ItemStack.deserializeBytes(result.getBytes("slot$i")?:continue)
                         e.player.inventory.addItem(boxedItem)
                     }
                     e.player.sendMessage("§aアドミンボックスを開封しました")
@@ -111,7 +111,7 @@ object ItemBox: Listener {
                     if (mysql.execute("update delivery_order set box_status=true,opener_name='${e.player.name}',opener_uuid='${e.player.uniqueId}',opened_date='${getDateForMySQL(Date())}' where order_id=$order_id;")) {
                         e.player.inventory.remove(item)
                         for (i in 1..8) {
-                            val boxedItem = itemFromBase64(result.getString("slot$i") ?: continue) ?: continue
+                            val boxedItem = ItemStack.deserializeBytes(result.getBytes("slot$i") ?: continue)
                             e.player.inventory.addItem(boxedItem)
                         }
                         e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)

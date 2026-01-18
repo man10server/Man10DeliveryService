@@ -28,7 +28,7 @@ object Utility {
     fun countAirPocket(inv: Inventory):Int{//Playerのinv専用 関数名にPlayerってつけるべきでしたね...
         var count=0
         for(i in 0 until 36){
-            if(inv.contents[i]==null)count++
+            if(inv.contents?.get(i) ==null)count++
         }
         return count
     }
@@ -56,21 +56,21 @@ object Utility {
         return yen.toString()
     }
 
-    fun itemFromBase64(data: String): ItemStack? = try {
-        val inputStream = ByteArrayInputStream(Base64Coder.decodeLines(data))
-        val dataInput = BukkitObjectInputStream(inputStream)
-        val items = arrayOfNulls<ItemStack>(dataInput.readInt())
-
-        // Read the serialized inventory
-        for (i in items.indices) {
-            items[i] = dataInput.readObject() as ItemStack
-        }
-
-        dataInput.close()
-        items[0]
-    } catch (e: Exception) {
-        null
-    }
+//    fun itemFromBase64(data: String): ItemStack? = try {
+//        val inputStream = ByteArrayInputStream(Base64Coder.decodeLines(data))
+//        val dataInput = BukkitObjectInputStream(inputStream)
+//        val items = arrayOfNulls<ItemStack>(dataInput.readInt())
+//
+//        // Read the serialized inventory
+//        for (i in items.indices) {
+//            items[i] = dataInput.readObject() as ItemStack
+//        }
+//
+//        dataInput.close()
+//        items[0]
+//    } catch (e: Exception) {
+//        null
+//    }
 
     fun setNBTInt(item:ItemStack,namespacedKey: String,value:Int){
         val meta=item.itemMeta
