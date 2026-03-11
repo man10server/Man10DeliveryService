@@ -1,5 +1,5 @@
 name: Man10DeliveryService
-version: @version@
+version: 1.0
 main: ltotj.minecraft.man10deliveryservice.Main
 api-version: 1.21
 depend: [Vault]
@@ -14,6 +14,8 @@ commands:
     usuage: ""
   mdop:
     usuage: ""
+  mdhelp:
+    usage: ""
 
 permissions:
   mdelivery.admin:
