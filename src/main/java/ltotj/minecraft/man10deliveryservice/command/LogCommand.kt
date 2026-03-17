@@ -134,6 +134,10 @@ object LogCommand:CommandExecutor,TabCompleter {
                                 for (i in 1..8) {
                                     val data = result.getString("slot$i") ?: continue
                                     val item = itemFromBase64(data)
+                                    if(item==null){
+                                        sender.sendMessage(text("§e§l[スロット$i]：§c復元失敗"))
+                                        continue
+                                    }
                                     sender.sendMessage(text("§e§l[スロット$i]：${item.amount}個").hoverEvent(item.asHoverEvent()))
                                 }
                                 sender.sendMessage("§a検索完了  カーソルを合わせることで表示されます")
