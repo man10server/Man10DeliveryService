@@ -114,32 +114,36 @@ object ItemBox: Listener {
                     boxOpeningList.remove(e.player.uniqueId)
                     return@execute
                 }
-                if(Bukkit.getPlayer(e.player.uniqueId)!=null) {
-                    if (mysql.execute("update delivery_order set box_status=true,opener_name='${e.player.name}',opener_uuid='${e.player.uniqueId}',opened_date='${getDateForMySQL(Date())}' where order_id=$order_id;")) {
-                        val items = mutableListOf<ItemStack>()
-                        for (i in 1..8) {
-                            val data = result.getString("slot$i") ?: continue
-                            items.add(itemFromBase64(data))
-                        }
-                        val senderUuid = result.getString("sender_uuid")
-                        Bukkit.getScheduler().runTask(Main.plugin, Runnable {
-                            e.player.inventory.remove(item)
-                            for (boxedItem in items) {
-                                e.player.inventory.addItem(boxedItem)
-                            }
-                            e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
-                            e.player.sendMessage("§aボックスを開封しました")
-                            boxOpeningList.remove(e.player.uniqueId)
-                            Bukkit.getPlayer(UUID.fromString(senderUuid))?.sendMessage("§e§l${e.player.name}があなたの送ったボックスを開封しました！")
-                        })
-                    } else {
-                        e.player.sendMessage("§4ボックスを開封できませんでした")
-                    }
+                if(Bukkit.getPlayer(e.player.uniqueId)==null) {
                     result.close()
                     mysql.close()
                     boxOpeningList.remove(e.player.uniqueId)
                     return@execute
                 }
+                if (mysql.execute("update delivery_order set box_status=true,opener_name='${e.player.name}',opener_uuid='${e.player.uniqueId}',opened_date='${getDateForMySQL(Date())}' where order_id=$order_id;")) {
+                    val items = mutableListOf<ItemStack>()
+                    for (i in 1..8) {
+                        val data = result.getString("slot$i") ?: continue
+                        items.add(itemFromBase64(data))
+                    }
+                    val senderUuid = result.getString("sender_uuid")
+                    Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                        e.player.inventory.remove(item)
+                        for (boxedItem in items) {
+                            e.player.inventory.addItem(boxedItem)
+                        }
+                        e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
+                        e.player.sendMessage("§aボックスを開封しました")
+                        boxOpeningList.remove(e.player.uniqueId)
+                        Bukkit.getPlayer(UUID.fromString(senderUuid))?.sendMessage("§e§l${e.player.name}があなたの送ったボックスを開封しました！")
+                    })
+                } else {
+                    e.player.sendMessage("§4ボックスを開封できませんでした")
+                    boxOpeningList.remove(e.player.uniqueId)
+                }
+                result.close()
+                mysql.close()
+                return@execute
             }
         }
     }
