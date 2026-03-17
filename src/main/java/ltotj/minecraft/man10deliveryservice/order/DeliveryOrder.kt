@@ -14,6 +14,7 @@ import ltotj.minecraft.man10deliveryservice.Utility.createClickEventText_run
 import ltotj.minecraft.man10deliveryservice.Utility.createGUIItem
 import ltotj.minecraft.man10deliveryservice.Utility.getDateForMySQL
 import ltotj.minecraft.man10deliveryservice.Utility.getNBTDouble
+import ltotj.minecraft.man10deliveryservice.Utility.itemToBase64
 import ltotj.minecraft.man10deliveryservice.Utility.getNBTString
 import ltotj.minecraft.man10deliveryservice.Utility.getYenString
 import ltotj.minecraft.man10deliveryservice.Utility.setNBTDouble
@@ -162,7 +163,7 @@ object DeliveryOrder: Listener {
                         query.append(",null")
                     }
                     else {
-                        query.append(",'${container[i]?.serializeAsBytes()}'")
+                        query.append(",'${itemToBase64(container[i]!!)}'")
                     }
                 }
                 query.append(");")

@@ -10,6 +10,7 @@ import org.bukkit.NamespacedKey
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
+import org.yaml.snakeyaml.external.biz.base64Coder.Base64Coder
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
@@ -84,6 +85,22 @@ object Utility {
     fun getNBTDouble(item:ItemStack,namespacedKey: String):Double{
         val meta=item.itemMeta?:return 0.0
         return meta.persistentDataContainer[NamespacedKey(plugin,namespacedKey), PersistentDataType.DOUBLE]?:0.0
+    }
+
+    /**
+     * 新形式のBase64からItemStackを復元するメソッド
+     */
+    fun itemFromBase64(data: String): ItemStack {
+        val bytes = Base64Coder.decodeLines(data)
+        return ItemStack.deserializeBytes(bytes)
+    }
+
+    /**
+     * ItemStackを新形式のBase64形式に変換するメソッド
+     */
+    fun itemToBase64(item: ItemStack): String {
+        val bytes = item.serializeAsBytes()
+        return Base64Coder.encodeLines(bytes)
     }
 
     fun createGUIItem(material: Material, amount: Int, name: String, lore: List<String>):ItemStack{

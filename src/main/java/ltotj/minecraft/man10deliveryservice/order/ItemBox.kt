@@ -8,6 +8,7 @@ import ltotj.minecraft.man10deliveryservice.MySQLManager
 import ltotj.minecraft.man10deliveryservice.Utility.countAirPocket
 import ltotj.minecraft.man10deliveryservice.Utility.getDateForMySQL
 import ltotj.minecraft.man10deliveryservice.Utility.getNBTInt
+import ltotj.minecraft.man10deliveryservice.Utility.itemFromBase64
 import net.kyori.adventure.text.Component
 import org.bukkit.Bukkit
 import org.bukkit.Sound
@@ -56,12 +57,18 @@ object ItemBox: Listener {
                     return@execute
                 }
                 else{
+                    val items = mutableListOf<ItemStack>()
                     for(i in 1..8){
-                        val boxedItem= ItemStack.deserializeBytes(result.getBytes("slot$i")?:continue)
-                        e.player.inventory.addItem(boxedItem)
+                        val data = result.getString("slot$i") ?: continue
+                        items.add(itemFromBase64(data))
                     }
-                    e.player.sendMessage("§aアドミンボックスを開封しました")
-                    e.player.inventory.remove(item)
+                    Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                        for(boxedItem in items){
+                            e.player.inventory.addItem(boxedItem)
+                        }
+                        e.player.sendMessage("§aアドミンボックスを開封しました")
+                        e.player.inventory.remove(item)
+                    })
                 }
                 result.close()
                 mysql.close()
@@ -94,7 +101,7 @@ object ItemBox: Listener {
                 if(result.getBoolean("box_status")){
                     e.player.sendMessage("§4既に開封されたボックスです")
                     println("§4${e.player.name}が開封済みのボックスを所持していました：order_id-$order_id")
-                    e.player.inventory.remove(item)
+                    Bukkit.getScheduler().runTask(Main.plugin, Runnable { e.player.inventory.remove(item) })
                     result.close()
                     mysql.close()
                     boxOpeningList.remove(e.player.uniqueId)
@@ -109,15 +116,22 @@ object ItemBox: Listener {
                 }
                 if(Bukkit.getPlayer(e.player.uniqueId)!=null) {
                     if (mysql.execute("update delivery_order set box_status=true,opener_name='${e.player.name}',opener_uuid='${e.player.uniqueId}',opened_date='${getDateForMySQL(Date())}' where order_id=$order_id;")) {
-                        e.player.inventory.remove(item)
+                        val items = mutableListOf<ItemStack>()
                         for (i in 1..8) {
-                            val boxedItem = ItemStack.deserializeBytes(result.getBytes("slot$i") ?: continue)
-                            e.player.inventory.addItem(boxedItem)
+                            val data = result.getString("slot$i") ?: continue
+                            items.add(itemFromBase64(data))
                         }
-                        e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
-                        e.player.sendMessage("§aボックスを開封しました")
-                        boxOpeningList.remove(e.player.uniqueId)
-                        Bukkit.getPlayer(UUID.fromString(result.getString("sender_uuid")))?.sendMessage("§e§l${e.player.name}があなたの送ったボックスを開封しました！")
+                        val senderUuid = result.getString("sender_uuid")
+                        Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                            e.player.inventory.remove(item)
+                            for (boxedItem in items) {
+                                e.player.inventory.addItem(boxedItem)
+                            }
+                            e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
+                            e.player.sendMessage("§aボックスを開封しました")
+                            boxOpeningList.remove(e.player.uniqueId)
+                            Bukkit.getPlayer(UUID.fromString(senderUuid))?.sendMessage("§e§l${e.player.name}があなたの送ったボックスを開封しました！")
+                        })
                     } else {
                         e.player.sendMessage("§4ボックスを開封できませんでした")
                     }
