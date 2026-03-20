@@ -86,6 +86,27 @@ object Utility {
         return meta.persistentDataContainer[NamespacedKey(plugin,namespacedKey), PersistentDataType.DOUBLE]?:0.0
     }
 
+    /**
+     * 新形式のBase64からItemStackを復元するメソッド
+     */
+    fun itemFromBase64(data: String): ItemStack? {
+        return try {
+            val bytes = Base64.getDecoder().decode(data)
+            ItemStack.deserializeBytes(bytes)
+        } catch (e: Exception) {
+            plugin.logger.warning("アイテムのBase64デシリアライズに失敗: ${e.message}")
+            null
+        }
+    }
+
+    /**
+     * ItemStackを新形式のBase64形式に変換するメソッド
+     */
+    fun itemToBase64(item: ItemStack): String {
+        val bytes = item.serializeAsBytes()
+        return Base64.getEncoder().encodeToString(bytes)
+    }
+
     fun createGUIItem(material: Material, amount: Int, name: String, lore: List<String>):ItemStack{
         val item=ItemStack(material, amount)
         val meta=item.itemMeta
