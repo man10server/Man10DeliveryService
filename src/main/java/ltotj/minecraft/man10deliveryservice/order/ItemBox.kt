@@ -127,17 +127,23 @@ object ItemBox: Listener {
                         boxOpeningList.remove(e.player.uniqueId)
                         return@Runnable
                     }
-                    e.player.inventory.remove(item)
-                    for (boxedItem in items) {
-                        e.player.inventory.addItem(boxedItem)
-                    }
-                    e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
-                    e.player.sendMessage("§aボックスを開封しました")
-                    boxOpeningList.remove(e.player.uniqueId)
                     executor.execute {
-                        mysql.execute("update delivery_order set box_status=true,opener_name='${e.player.name}',opener_uuid='${e.player.uniqueId}',opened_date='${getDateForMySQL(Date())}' where order_id=$order_id;")
-                        if(senderUuid!=null) {
-                            try { Bukkit.getPlayer(UUID.fromString(senderUuid))?.sendMessage("§e§l${e.player.name}があなたの送ったボックスを開封しました！") } catch (_: Exception) {}
+                        if (mysql.execute("update delivery_order set box_status=true,opener_name='${e.player.name}',opener_uuid='${e.player.uniqueId}',opened_date='${getDateForMySQL(Date())}' where order_id=$order_id;")) {
+                            Bukkit.getScheduler().runTask(Main.plugin, Runnable {
+                                e.player.inventory.remove(item)
+                                for (boxedItem in items) {
+                                    e.player.inventory.addItem(boxedItem)
+                                }
+                                e.player.playSound(e.player.location, Sound.ENTITY_PLAYER_LEVELUP, 1F, 1F)
+                                e.player.sendMessage("§aボックスを開封しました")
+                                boxOpeningList.remove(e.player.uniqueId)
+                            })
+                            if(senderUuid!=null) {
+                                try { Bukkit.getPlayer(UUID.fromString(senderUuid))?.sendMessage("§e§l${e.player.name}があなたの送ったボックスを開封しました！") } catch (_: Exception) {}
+                            }
+                        } else {
+                            e.player.sendMessage("§4ボックスを開封できませんでした")
+                            boxOpeningList.remove(e.player.uniqueId)
                         }
                     }
                 })
