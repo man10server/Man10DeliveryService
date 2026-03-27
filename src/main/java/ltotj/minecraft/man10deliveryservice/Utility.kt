@@ -91,7 +91,7 @@ object Utility {
      */
     fun itemFromBase64(data: String): ItemStack? {
         return try {
-            val bytes = Base64.getDecoder().decode(data)
+            val bytes = Base64.getMimeDecoder().decode(data)
             ItemStack.deserializeBytes(bytes)
         } catch (e: Exception) {
             plugin.logger.warning("アイテムのBase64デシリアライズに失敗: ${e.message}")
